@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Northern Peaks Kitchen — Staff Live Order Screen &amp; Docket Printer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Oswald:wght@500;600;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #111813;
+      --card-bg: #1B261F;
+      --forest: #1C301E;
+      --gold: #B89B67;
+      --gold-light: #D5B882;
+      --border: rgba(184, 155, 103, 0.35);
+      --green: #27AE60;
+      --red: #C0392B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Staff Header */
+    header {
+      background: #18231C;
+      border-bottom: 2px solid var(--gold);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .brand-group { display: flex; align-items: center; gap: 14px; }
+    .brand-logo { height: 42px; width: auto; object-fit: contain; }
+    .brand-title h1 { font-family: 'Oswald', sans-serif; font-size: 19px; color: var(--gold-light); letter-spacing: 0.8px; line-height: 1.1; }
+    .brand-title p { font-size: 11px; color: #A0B2A6; font-weight: 600; }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .live-clock {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.06);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .toggle-autoprint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--gold-light);
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-test {
+      background: var(--gold);
+      color: #111813;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-test:hover { background: var(--gold-light); }
+
+    /* Main Grid */
+    .dashboard-container {
+      flex: 1;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: #18231C;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-pill strong { font-family: 'Oswald', sans-serif; font-size: 16px; color: var(--gold-light); }
+
+    .tickets-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      align-content: start;
+    }
+
+    .ticket {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: relative;
+      animation: popIn 0.25s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .ticket.ready {
+      border-color: var(--green);
+      background: #142E1F;
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      padding-bottom: 8px;
+    }
+    .ticket-id { font-family: 'Oswald', sans-serif; font-size: 24px; color: var(--gold-light); font-weight: 700; }
+    .ticket-paid-tag {
+      background: var(--green);
+      color: #FFFFFF;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+    }
+    .ticket-time { font-size: 12px; color: #A0B2A6; }
+
+    .ticket-cust {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .ticket-cust-phone { font-size: 12px; color: var(--gold-light); font-weight: 400; }
+
+    .station-block {
+      background: rgba(0,0,0,0.22);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .station-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .tag-grill { background: #D35400; color: #fff; }
+    .tag-barista { background: #2980B9; color: #fff; }
+
+    .food-line { font-size: 14px; font-weight: 700; color: #FFFFFF; }
+    .coffee-line { font-size: 13.5px; font-weight: 700; color: var(--gold-light); }
+    .coffee-details { font-size: 12px; color: #D0DDD5; margin-left: 14px; }
+    .item-note {
+      font-size: 11.5px;
+      color: #E67E22;
+      font-style: italic;
+      background: rgba(230,126,34,0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .ticket-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ticket-price-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #A0B2A6;
+    }
+    .ticket-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-act {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .btn-print { background: #2C3E50; color: #FFFFFF; }
+    .btn-print:hover { background: #34495E; }
+    .btn-ready { background: var(--green); color: #FFFFFF; }
+    .btn-ready:hover { background: #2ECC71; }
+    .btn-done { background: #4A5B50; color: #FFFFFF; }
+    .btn-done:hover { background: #5D7164; }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: #7C8E82;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }
+
+    /* Thermal Print CSS */
+    #printDocketArea { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #printDocketArea, #printDocketArea * { visibility: visible; }
+      #printDocketArea {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 78mm;
+        margin: 0;
+        padding: 4mm 2mm;
+        font-family: 'Roboto Mono', Courier, monospace;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #000000;
+        background: #FFFFFF;
+      }
+      .docket-header { text-align: center; margin-bottom: 8px; }
+      .docket-header h2 { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+      .docket-header p { font-size: 11px; margin: 1px 0; }
+      .docket-divider { border-top: 1px dashed #000; margin: 6px 0; }
+      .docket-double-divider { border-top: 2px solid #000; margin: 6px 0; }
+      .docket-row { display: flex; justify-content: space-between; }
+      .docket-item { margin: 6px 0; }
+      .docket-item-title { font-size: 13px; font-weight: 700; }
+      .docket-item-sub { font-size: 11.5px; padding-left: 8px; }
+      .docket-footer { text-align: center; margin-top: 10px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden 80mm POS Thermal Docket Print Target -->
+  <div id="printDocketArea"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-group">
+      <img src="data:image/png;base64,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" alt="Northern Peaks Kitchen" class="brand-logo" />
+      <div class="brand-title">
+        <h1>NORTHERN PEAKS KITCHEN</h1>
+        <p>STAFF KITCHEN SCREEN &amp; DOCKET CONTROLLER</p>
+      </div>
+    </div>
+    <div class="header-controls">
+      <label class="toggle-autoprint">
+        <input type="checkbox" id="autoPrintCheck" checked>
+        <span>🖨️ Auto-Print to Docket Printer</span>
+      </label>
+      <div class="live-clock" id="liveClock">07:00 AM</div>
+      <button class="btn-test" onclick="simulateTestPaidOrder()">+ Test Order Chime</button>
+    </div>
+  </header>
+
+  <!-- Dashboard Body -->
+  <div class="dashboard-container">
+    <div class="stats-bar">
+      <div class="stat-pill">Active Kitchen Orders: <strong id="activeCount">0</strong></div>
+      <div class="stat-pill">Ready for Pickup: <strong id="readyCount" style="color:#2ECC71;">0</strong></div>
+      <div class="stat-pill">Completed Today: <strong id="doneCount">0</strong></div>
+      <div style="margin-left:auto; font-size:12px; color:#A0B2A6;">
+        💡 <em>This screen is for staff only. Keep open on counter iPad or POS monitor.</em>
+      </div>
+    </div>
+
+    <div class="tickets-grid" id="ticketsGrid">
+      <!-- Injected by JavaScript -->
+    </div>
+  </div>
+
+  <script>
+    // Live Clock
+    setInterval(() => {
+      const d = new Date();
+      document.getElementById('liveClock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    }, 1000);
+
+    // Audio Synthesizer (Staff Bell Chime)
+    function playKitchenChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(880.00, now + 0.12); // A5
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.8);
+      } catch (e) {}
+    }
+
+    // Real-Time Cross-Tab / Cross-Window Listener
+    try {
+      const bc = new BroadcastChannel('np_kitchen_channel');
+      bc.onmessage = (event) => {
+        if (event.data && event.data.type === 'NEW_ORDER') {
+          playKitchenChime();
+          renderTickets();
+          if (document.getElementById('autoPrintCheck').checked) {
+            triggerThermalDocketPrint(event.data.order);
+          }
+        }
+      };
+    } catch(e) {}
+
+    // Also listen to window localStorage changes
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'np_orders') {
+        playKitchenChime();
+        renderTickets();
+      }
+    });
+
+    // Render Tickets
+    function renderTickets() {
+      const grid = document.getElementById('ticketsGrid');
+      const orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+
+      let active = 0, ready = 0;
+      orders.forEach(o => {
+        if (o.status === 'preparing') active++;
+        if (o.status === 'ready') ready++;
+      });
+
+      document.getElementById('activeCount').innerText = active;
+      document.getElementById('readyCount').innerText = ready;
+      document.getElementById('doneCount').innerText = parseInt(localStorage.getItem('np_done_count') || '0');
+
+      if (orders.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">☕🥪</div>
+            <h3 style="font-family:'Oswald',sans-serif; font-size:22px; color:var(--gold-light);">Kitchen Screen Active &amp; Ready</h3>
+            <p style="font-size:13px; margin-top:6px;">Waiting for new incoming paid Grab &amp; Go orders...</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      orders.forEach((o, idx) => {
+        const ticket = document.createElement('div');
+        ticket.className = `ticket ${o.status === 'ready' ? 'ready' : ''}`;
+
+        let stationsHtml = o.items.map(it => `
+          <div class="station-block">
+            <span class="station-title tag-grill">🥪 GRILL &amp; TOASTIE STATION</span>
+            <div class="food-line">• ${it.food}</div>
+            ${it.note ? `<div class="item-note">Special Request: "${it.note}"</div>` : ''}
+            
+            <div style="margin-top:6px; padding-top:6px; border-top:1px dashed rgba(255,255,255,0.1);">
+              <span class="station-title tag-barista">☕ BARISTA STATION</span>
+              <div class="coffee-line">1x ${it.coffee} (${it.size})</div>
+              <div class="coffee-details">🥛 ${it.milk} • ${it.sugar}${it.extraShot ? ' • Extra Shot' : ''}</div>
+            </div>
+          </div>
+        `).join('');
+
+        ticket.innerHTML = `
+          <div class="ticket-header">
+            <div>
+              <span class="ticket-id">#${o.id}</span>
+              <span class="ticket-paid-tag">PAID ✓</span>
+            </div>
+            <div class="ticket-time">${o.time} (${o.pickupTime})</div>
+          </div>
+
+          <div class="ticket-cust">
+            <span>Customer: ${o.name}</span>
+            <span class="ticket-cust-phone">📞 ${o.phone}</span>
+          </div>
+
+          <div>${stationsHtml}</div>
+
+          <div class="ticket-footer">
+            <div class="ticket-price-row">
+              <span>Total: <strong>$${o.total.toFixed(2)}</strong></span>
+              <span>${o.payment} (${o.authRef || 'VERIFIED'})</span>
+            </div>
+            <div class="ticket-actions">
+              <button class="btn-act btn-print" onclick="reprintTicket(${idx})">🖨️ Re-Print</button>
+              ${o.status === 'preparing' 
+                ? `<button class="btn-act btn-ready" onclick="markOrderReady(${idx})">Mark Ready 🔔</button>`
+                : `<button class="btn-act" style="background:#2ECC71; color:#fff;" disabled>Ready at Counter ✓</button>`
+              }
+              <button class="btn-act btn-done" onclick="completeOrder(${idx})">Done ✅</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(ticket);
+      });
+    }
+
+    function markOrderReady(idx) {
+      let orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      if (orders[idx]) {
+        orders[idx].status = 'ready';
+        localStorage.setItem('np_orders', JSON.stringify(orders));
+        playKitchenChime();
+        renderTickets();
+      }
+    }
+
+    function completeOrder(idx) {
+      let orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      orders.splice(idx, 1);
+      localStorage.setItem('np_orders', JSON.stringify(orders));
+      let done = parseInt(localStorage.getItem('np_done_count') || '0') + 1;
+      localStorage.setItem('np_done_count', done);
+      renderTickets();
+    }
+
+    function reprintTicket(idx) {
+      let orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      if (orders[idx]) {
+        triggerThermalDocketPrint(orders[idx]);
+      }
+    }
+
+    // Thermal Docket Print Function
+    function triggerThermalDocketPrint(order) {
+      const docketArea = document.getElementById('printDocketArea');
+      let itemsHtml = order.items.map(it => `
+        <div class="docket-item">
+          <div class="docket-row">
+            <span class="docket-item-title">1x ${it.food.toUpperCase()}</span>
+            <span>$${it.price.toFixed(2)}</span>
+          </div>
+          <div class="docket-item-sub">☕ ${it.coffee.toUpperCase()} (${it.size})</div>
+          <div class="docket-item-sub">🥛 ${it.milk.toUpperCase()} | ${it.sugar.toUpperCase()}${it.extraShot ? ' | EXTRA SHOT' : ''}</div>
+          ${it.note ? `<div class="docket-item-sub" style="font-weight:bold;">NOTE: "${it.note.toUpperCase()}"</div>` : ''}
+        </div>
+      `).join('');
+
+      docketArea.innerHTML = `
+        <div class="docket-header">
+          <h2>NORTHERN PEAKS KITCHEN</h2>
+          <p>GRAB &amp; GO EXPRESS</p>
+          <p>Shop 2, 9 Westralia St, Stuart Park</p>
+          <p>Darwin, NT 0820 • 0424 203 924</p>
+        </div>
+        <div class="docket-double-divider"></div>
+        <div class="docket-row">
+          <strong>ORDER #: ${order.id}</strong>
+          <strong style="border:1px solid #000; padding:1px 4px;">*** PAID ***</strong>
+        </div>
+        <div class="docket-row">
+          <span>TIME: ${order.time}</span>
+          <span>DATE: ${order.date || new Date().toLocaleDateString('en-AU')}</span>
+        </div>
+        <div class="docket-row">
+          <strong>CUSTOMER: ${order.name.toUpperCase()}</strong>
+          <span>${order.phone}</span>
+        </div>
+        <div class="docket-row">
+          <span>PICKUP: ${order.pickupTime.toUpperCase()}</span>
+        </div>
+        <div class="docket-divider"></div>
+        <div>${itemsHtml}</div>
+        <div class="docket-divider"></div>
+        <div class="docket-row" style="font-size:14px; font-weight:700;">
+          <span>TOTAL (GST INCL):</span>
+          <span>$${order.total.toFixed(2)}</span>
+        </div>
+        <div class="docket-row" style="font-size:11px; margin-top:2px;">
+          <span>PAYMENT METHOD:</span>
+          <span>${order.payment}</span>
+        </div>
+        <div class="docket-row" style="font-size:10px;">
+          <span>AUTH CODE:</span>
+          <span>${order.authRef || 'VERIFIED'}</span>
+        </div>
+        <div class="docket-double-divider"></div>
+        <div class="docket-footer">
+          <p style="font-weight:700; font-size:12px;">*** TOASTIE PRESS &amp; BARISTA DOCKET ***</p>
+          <p>Ready for customer express collection</p>
+          <p>www.northernpeaks.com.au</p>
+        </div>
+      `;
+
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    }
+
+    function simulateTestPaidOrder() {
+      const sample = {
+        id: 'NP-' + Math.floor(100 + Math.random() * 900),
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        date: new Date().toLocaleDateString('en-AU'),
+        name: "Sarah (Local Office)",
+        phone: "0412 999 888",
+        pickupTime: "5–10 mins (ASAP)",
+        payment: "Apple Pay (PAID)",
+        authRef: "AUTH-892144",
+        items: [
+          { food: "Chicken & Avocado Toastie", coffee: "Caffè Latte", size: "8oz Regular", milk: "Oat Milk (+ $1.00)", sugar: "1 Sugar", extraShot: false, note: "Extra hot please", price: 15.50 }
+        ],
+        total: 15.50,
+        status: "preparing"
+      };
+      let orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      orders.unshift(sample);
+      localStorage.setItem('np_orders', JSON.stringify(orders));
+      playKitchenChime();
+      renderTickets();
+
+      if (document.getElementById('autoPrintCheck').checked) {
+        triggerThermalDocketPrint(sample);
+      }
+    }
+
+    // Initial load
+    renderTickets();
+  </script>
+</body>
+</html>
