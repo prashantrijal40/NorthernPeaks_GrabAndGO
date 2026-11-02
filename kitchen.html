@@ -147,13 +147,16 @@
     }
     .ticket-id { font-family: 'Oswald', sans-serif; font-size: 24px; color: var(--gold-light); font-weight: 700; }
     .ticket-paid-tag {
-      background: var(--green);
+      background: #E67E22;
       color: #FFFFFF;
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 700;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 12px;
       letter-spacing: 0.5px;
+    }
+    .ticket-paid-tag.is-paid {
+      background: var(--green);
     }
     .ticket-time { font-size: 12px; color: #A0B2A6; }
 
@@ -415,7 +418,10 @@
           <div class="ticket-header">
             <div>
               <span class="ticket-id">#${o.id}</span>
-              <span class="ticket-paid-tag">PAID ✓</span>
+              ${o.paymentStatus === 'PAID' 
+                ? `<span class="ticket-paid-tag is-paid">PAID ✓</span>` 
+                : `<span class="ticket-paid-tag">COLLECT $${o.total.toFixed(2)} AT COUNTER</span>`
+              }
             </div>
             <div class="ticket-time">${o.time} (${o.pickupTime})</div>
           </div>
@@ -434,9 +440,13 @@
             </div>
             <div class="ticket-actions">
               <button class="btn-act btn-print" onclick="reprintTicket(${idx})">🖨️ Re-Print</button>
+              ${o.paymentStatus !== 'PAID'
+                ? `<button class="btn-act" style="background:#F39C12; color:#fff;" onclick="markOrderPaid(${idx})">Collect $${o.total.toFixed(2)} ✓</button>`
+                : `<button class="btn-act" style="background:#27AE60; color:#fff;" disabled>Paid ✓</button>`
+              }
               ${o.status === 'preparing' 
                 ? `<button class="btn-act btn-ready" onclick="markOrderReady(${idx})">Mark Ready 🔔</button>`
-                : `<button class="btn-act" style="background:#2ECC71; color:#fff;" disabled>Ready at Counter ✓</button>`
+                : `<button class="btn-act" style="background:#2ECC71; color:#fff;" disabled>Ready 🔔</button>`
               }
               <button class="btn-act btn-done" onclick="completeOrder(${idx})">Done ✅</button>
             </div>
@@ -444,6 +454,16 @@
         `;
         grid.appendChild(ticket);
       });
+    }
+
+        function markOrderPaid(idx) {
+      let orders = JSON.parse(localStorage.getItem('np_orders') || '[]');
+      if (orders[idx]) {
+        orders[idx].paymentStatus = 'PAID';
+        orders[idx].payment = 'Paid at Counter (Card/Cash)';
+        localStorage.setItem('np_orders', JSON.stringify(orders));
+        renderTickets();
+      }
     }
 
     function markOrderReady(idx) {
@@ -497,7 +517,7 @@
         <div class="docket-double-divider"></div>
         <div class="docket-row">
           <strong>ORDER #: ${order.id}</strong>
-          <strong style="border:1px solid #000; padding:1px 4px;">*** PAID ***</strong>
+          <strong style="border:2px solid #000; padding:2px 6px;">*** PAY AT COUNTER ***</strong>
         </div>
         <div class="docket-row">
           <span>TIME: ${order.time}</span>
@@ -518,8 +538,8 @@
           <span>$${order.total.toFixed(2)}</span>
         </div>
         <div class="docket-row" style="font-size:11px; margin-top:2px;">
-          <span>PAYMENT METHOD:</span>
-          <span>${order.payment}</span>
+          <span>PAYMENT STATUS:</span>
+          <span style="font-weight:700;">COLLECT $${order.total.toFixed(2)} AT COUNTER</span>
         </div>
         <div class="docket-row" style="font-size:10px;">
           <span>AUTH CODE:</span>
@@ -546,8 +566,9 @@
         name: "Sarah (Local Office)",
         phone: "0412 999 888",
         pickupTime: "5–10 mins (ASAP)",
-        payment: "Apple Pay (PAID)",
-        authRef: "AUTH-892144",
+        payment: "Pay at Counter",
+        paymentStatus: "UNPAID",
+        authRef: "COUNTER-8921",
         items: [
           { food: "Chicken & Avocado Toastie", coffee: "Caffè Latte", size: "8oz Regular", milk: "Oat Milk (+ $1.00)", sugar: "1 Sugar", extraShot: false, note: "Extra hot please", price: 15.50 }
         ],

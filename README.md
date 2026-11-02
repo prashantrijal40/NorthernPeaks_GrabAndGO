@@ -7,11 +7,11 @@ Express morning Grab & Go online ordering system and kitchen docket controller f
 ## ⚡ Overview
 
 * **$14.50 Breakfast Combo:** 1 Gourmet Bite (Toasties, Croissants, Bacon & Egg Roll, Cornettos, Cinnamon Scroll) + 1 Regular 8oz Barista Coffee.
-* **Paid-First Order Gate:** Only paid orders are transmitted to the kitchen, preventing unpaid waste.
+* **Pay at Counter on Pickup:** Zero friction for customers (no card typing on mobile). Orders are collected and paid at the counter via EFTPOS, Apple Pay, Card, or Cash.
 * **Separated Interfaces:**
-  * **[`index.html`](index.html)** — Customer-facing mobile ordering & payment app (what the QR code opens).
+  * **[`index.html`](index.html)** — Customer-facing mobile ordering app (what the QR code opens).
   * **[`kitchen.html`](kitchen.html)** — Staff kitchen display system (KDS) & direct 80mm thermal docket printer controller (bookmarked on counter iPad).
-* **Thermal Docket Printer Integration:** Automatically formats standard 80mm POS dockets with station routing (Grill Station vs Barista Station).
+* **Thermal Docket Printer Integration:** Automatically formats standard 80mm POS dockets clearly labeled `*** PAY AT COUNTER ***` and `COLLECT $XX.XX AT COUNTER` with station routing (Grill Station vs Barista Station).
 
 ---
 
